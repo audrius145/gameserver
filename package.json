@@ -6,10 +6,13 @@
   "dependencies": {
     "body-parser": "^1.20.1",
     "express": "^4.18.2",
-    "lowdb": "^5.0.3"
+    "lowdb": "^5.0.3",
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0"
   },
   "scripts": {
-    "start": "node gameserver.mjs"
+    "start": "node gameserver.mjs",
+    "start-https": "HTTPS=true node gameserver.mjs"
   },
   "author": "Ole I Hougaard",
   "license": "ISC"

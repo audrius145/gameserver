@@ -4,6 +4,9 @@ import crypto from 'node:crypto'
 import { Low } from 'lowdb'
 import { JSONFile } from 'lowdb/node'
 
+import https from 'https'
+import fs from 'fs'
+
 const app = express()
 app.use(express.static('static'))
 
@@ -16,6 +19,8 @@ app.use(function(_, res, next) {
   });
 
 const jsonFile = new JSONFile('data/data.json')
+
+const useHttps = process.env.HTTPS === "true";
 
 const createDb = low => {
   low.data = low.data ?? { users: [], games: [] }
@@ -90,7 +95,7 @@ app.post('/login', (req, res) => {
 })
 
 app.post('/logout', (req, res) => {
-  if (req.query.token && sessions.get(req.query.token)) {
+  if (req.query.token && sessions.get(req.query.token)!==undefined) {
     sessions.delete(req.query.token)
     res.sendStatus(200)
   } else {
@@ -182,6 +187,19 @@ async function start() {
   await low.read()
   low.data = low.data ?? { users: [] }
   db = createDb(low)
-  app.listen(9090, () => console.log('Listening on port 9090'))
+  if (useHttps) {
+    const privateKey = fs.readFileSync(".cert/server.key", "utf8");
+    const certificate = fs.readFileSync(".cert/server.crt", "utf8");
+    
+    const credentials = { key: privateKey, cert: certificate };
+    
+    https.createServer(credentials, app).listen(9043, () => {
+      console.log(
+        `  📞    Listening on https://localhost:9043`
+        );
+      });
+    } else {
+    app.listen(9090, () => console.log('Listening on port http://localhost:9090'))
+  }
 }
 start()
